@@ -117,7 +117,7 @@ const geometry = new ExtrudeGeometry( shape, extrudeSettings );
 const material = new MeshStandardMaterial(  );
 const smesh = new Mesh( geometry, material ) ;
 
-var vertices = geometry.vertices;
+// var vertices = geometry.vertices;
 
 smesh.position.set(0, -1, 0)
 smesh.position.set(-size/2, -1, -size/2)
