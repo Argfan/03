@@ -10,10 +10,13 @@ import { computed, onMounted, ref, watch } from 'vue';
 
   import {ambienlight, directionalLight, pointLight,  spotLight,  } from '../models/light'
   import { useClip } from '../store/clipStore'
-import { addSceneEntity } from '../service/helpers';
+  import { storeToRefs } from 'pinia';
+
+  import ClipPathType from '../models/ClipPathType';
 
   const clipC = useClip()
- 
+  const {clipPath} = storeToRefs(clipC)
+
 
   const pane = new Pane();
   pane.registerPlugin(TweakpaneEssentialsPlugin);
@@ -48,17 +51,14 @@ import { addSceneEntity } from '../service/helpers';
   })
 
   
-  const asd = (ev: any)=>{
-    console.log(ev.value);    
-  }
+  watch(clipPath, 
+    ()=>{
+      console.log('asdasd');      
+        
+    })
 
-  // cornerList.element.onchange = (e)=>{
-  //   console.log(e);
-    
-  // }
-
-  watch(cornerList, ()=>{
-    console.log(cornerList);
+  clipC.$subscribe(()=>{
+    draw()
     
   })
 
@@ -69,6 +69,7 @@ import { addSceneEntity } from '../service/helpers';
   let renderer: WebGLRenderer
   let camera: PerspectiveCamera
   let constrols: OrbitControls
+  let meshArr: Mesh[] = [];
 
   const aspectRaio = computed(()=> width.value / height.value)
  
@@ -91,7 +92,7 @@ import { addSceneEntity } from '../service/helpers';
   plane.position.set(0, -1.5, 0)
   plane.receiveShadow = true;  
 
-  scene.add(plane)  
+  // scene.add(plane)  
 
   scene.add( ambienlight );
 
@@ -102,34 +103,62 @@ import { addSceneEntity } from '../service/helpers';
   // scene.add( pointLight2 );
   scene.add( spotLight )
 
+ 
+  
+  const geneeateShape = (cPth: ClipPathType[])=>{
+    console.log(cPth);
+    
 
-const size = 5
+    const size = 5
 
+    const shape = new Shape()
 
-const shape = new Shape()
-  .moveTo( 0*size, 0*size )
-  .lineTo( 1*size, 0*size )
-  .lineTo( 1*size, 1*size )
-  .lineTo( 0*size, 1*size )
+    shape.moveTo( cPth[0].x*size, cPth[0].y*size )
+    for (let i = 1; i < cPth.length; i++) {
+      shape.lineTo( cPth[i].x*size, cPth[i].y*size )      
+    }
+    shape.autoClose=true;
 
-const extrudeSettings = { depth: 0.1, bevelEnabled: true, bevelSegments: 1, steps: 1, bevelSize: 0, bevelThickness: 0 };
-const geometry = new ExtrudeGeometry( shape, extrudeSettings );
-const material = new MeshStandardMaterial(  );
-const smesh = new Mesh( geometry, material ) ;
-
-// var vertices = geometry.vertices;
-
-smesh.position.set(0, -1, 0)
-smesh.position.set(-size/2, -1, -size/2)
-smesh.rotation.x = Math.PI/2
-
-scene.add( smesh );
-
-console.log(smesh);
-
-// smesh.geometry.parameters.shapes.curves[0].v1.x = 5
+    // cPth.forEach((el, i)=>{
+    //   if(i) shape.moveTo( el.x*size, el.y*size )
+    //   else shape.lineTo( el.x*size, el.y*size )
+    // })
+    console.log(shape);
+    
 
 
+    const extrudeSettings = { depth: 0.1, bevelEnabled: true, bevelSegments: 1, steps: 1, bevelSize: 0, bevelThickness: 0 };
+    const geometry = new ExtrudeGeometry( shape, extrudeSettings );
+    const material = new MeshStandardMaterial(  );
+    const smesh = new Mesh( geometry, material ) ;
+
+    // var vertices = geometry.vertices;
+
+    smesh.position.set(-size/2, 0, -size/2)
+    smesh.rotation.x = Math.PI/2
+
+    scene.add( smesh );
+    meshArr.push(smesh)
+
+    console.log(smesh);
+
+  // smesh.geometry.parameters.shapes.curves[0].v1.x = 5
+}
+  const draw = ()=> {
+    meshArr.forEach(e=>{
+        e.geometry.dispose();
+        e.material.dispose();
+        scene.remove(e);
+    });
+    meshArr=[];    
+
+    geneeateShape(clipPath.value)
+    
+    meshArr.forEach(e=>{
+        e.castShadow=true;
+        scene.add(e);
+    }); 
+  }
 
   const updateRenderer = ()=>{
     renderer.setSize(width.value, height.value)
@@ -165,7 +194,7 @@ console.log(smesh);
     requestAnimationFrame(loop)
   }
   
-  const start = () => {
+  const init = () => {
     renderer = new WebGLRenderer({canvas: canvas.value as HTMLCanvasElement, antialias: true})
     renderer.shadowMap.enabled = true;
     // renderer.setClearColor(0xfafafa);
@@ -174,13 +203,14 @@ console.log(smesh);
     camera.lookAt( 0, 0, 0 );
     updateRenderer()
     updateCamera()
+    
     loop()
 
   }
 
 
 onMounted(()=>{
-  start()
+  init()
 })
 
 </script>

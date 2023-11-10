@@ -8,36 +8,35 @@ import { useMouse } from '@vueuse/core'
 
 import { useClip } from '../store/clipStore'
 import { storeToRefs } from 'pinia'
+import ClipPathType from '../models/ClipPathType'
 
 const clipC = useClip()
 const {clipCorner} = storeToRefs(clipC)
 
-console.log(clipC);
+console.log(clipCorner);
 
 
 const { x, y } = useMouse()
+const cMouse = reactive({x: 0, y:0})
 
 interface PropTypes {
   c_count: number
   c_width: number,
   c_height: number
 }
-
-const cMouse = reactive({x: 0, y:0})
-
 const p = defineProps<PropTypes>()
+
+
 
 const isDraging = ref(false)
 
-const clipPath:Ref<{id: string, x: number; y: number}[]> = ref([])
+const clipPath:Ref<ClipPathType[]> = ref([])
 
 const pRef = toRef(p)
 
 watch(clipCorner, ()=>{
   init()  
 })
-
-
 
 let handles:Ref<Handle[]> = ref([])
 const handle = reactive(new Handle())
@@ -59,18 +58,9 @@ const init = ()=>{
       isDraging: false
     })
     clipPath.value.push({id:id,x:el[0],y:el[1]})
+    clipC.setClipPath(clipPath.value)
   })
 } 
-// const hdragstart = (h: Handle)=>{
-//   console.log('start', h);
-//   Object.assign(handle, h)
-//   h.isDraging = true
-// }
-// const hdragend = (event: DragEvent)=>{
-//   console.log('end', event);   
-// }
-
-
 
 watch(x, ()=>{
   hTranslate()
@@ -129,6 +119,7 @@ const clipPathInit = ()=>{
     clip.x=handle.x
     clip.y=handle.y
   }
+  clipC.setClipPath(clipPath.value)
 }
 
 

@@ -15,8 +15,8 @@ directionalLight.shadow.camera.far = 500; // default
 export const directionalLightHelper = new DirectionalLightHelper( directionalLight, 1 , '#8888ff' );
 directionalLightHelper.name = 'directionalLightHelper'
 
-export const pointLight = new PointLight( 0x00ff00, 1 );
-pointLight.position.set( -0.75, 0.75, 0.75 );
+export const pointLight = new PointLight( 0x00ff00, 1.5 );
+pointLight.position.set( -1, 1, -1 );
 pointLight.name = 'pointLight'
 pointLight.castShadow=true
 
