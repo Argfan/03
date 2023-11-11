@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { Ref, computed, onMounted, reactive, ref, toRef, watch } from 'vue'
+import { Ref, computed, onMounted, reactive, ref, watch } from 'vue'
 import { getGUID } from '../service/helpers'
 import Handle from '../models/Handle'
 import {cornersParametr} from '../moks/Clip_moks'
@@ -32,7 +32,7 @@ const isDraging = ref(false)
 
 const clipPath:Ref<ClipPathType[]> = ref([])
 
-const pRef = toRef(p)
+// const pRef = toRef(p)
 
 watch(clipCorner, ()=>{
   init()  

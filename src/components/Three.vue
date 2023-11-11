@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 
-  import {Mesh, MeshBasicMaterial, PerspectiveCamera, Scene,  WebGLRenderer, BoxGeometry,  MeshStandardMaterial, PointLight, MeshLambertMaterial, MeshNormalMaterial, MeshPhongMaterial, Object3D, SphereGeometry, MeshToonMaterial, Shape, ShapeGeometry, ExtrudeGeometry} from 'three'
-  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+  import {Mesh, PerspectiveCamera, Scene,  WebGLRenderer, BoxGeometry,  MeshStandardMaterial, Shape, ExtrudeGeometry} from 'three'
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
   import { useWindowSize } from '@vueuse/core';
 
-  import {Pane} from 'tweakpane';
-  import * as TweakpaneEssentialsPlugin from '@tweakpane/plugin-essentials/dist/tweakpane-plugin-essentials.min.js';
+  import { ListBladeApi, Pane} from 'tweakpane';
 
   import {ambienlight, directionalLight, pointLight,  spotLight,  } from '../models/light'
   import { useClip } from '../store/clipStore'
@@ -19,20 +18,17 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 
   const pane = new Pane();
-  pane.registerPlugin(TweakpaneEssentialsPlugin);
+
   
 
   // console.log(ambienlight.color.convertLinearToSRGB());
   
 
-  const fpsGraph = pane.addBlade({
-    view: 'fpsgraph',
-    label: 'FPS',
-  });
-  const PARAMS = {
-    speed: 50,
 
-  };   
+  // const PARAMS = {
+  //   speed: 50,
+
+  // };   
 
   const cornerList = pane.addBlade({
     view: 'list',
@@ -46,14 +42,17 @@ import { computed, onMounted, ref, watch } from 'vue';
       {text: '8', value: '8'},
     ],
     value: '4',
-  }).on('change', (ev)=>{
+  }) as  ListBladeApi<any>
+
+  cornerList.on('change', (ev:any)=>{
     clipC.setClipCorner(+ev.value)
   })
-
+  console.log(cornerList);
+  
+  // cornerList.addEventListener('change', ()=>{})
   
   watch(clipPath, 
-    ()=>{
-      console.log('asdasd');      
+    ()=>{   
         
     })
 
@@ -106,24 +105,22 @@ import { computed, onMounted, ref, watch } from 'vue';
  
   
   const geneeateShape = (cPth: ClipPathType[])=>{
-    console.log(cPth);
-    
-
+ 
     const size = 5
 
     const shape = new Shape()
 
-    shape.moveTo( cPth[0].x*size, cPth[0].y*size )
-    for (let i = 1; i < cPth.length; i++) {
-      shape.lineTo( cPth[i].x*size, cPth[i].y*size )      
-    }
+    // shape.moveTo( cPth[0].x*size, cPth[0].y*size )
+    // for (let i = 1; i < cPth.length; i++) {
+    //   shape.lineTo( cPth[i].x*size, cPth[i].y*size )      
+    // }
+    
+    cPth.forEach((el, i)=>{
+      if(i==0) shape.moveTo( el.x*size, el.y*size )
+      else shape.lineTo( el.x*size, el.y*size )
+    })
+    
     shape.autoClose=true;
-
-    // cPth.forEach((el, i)=>{
-    //   if(i) shape.moveTo( el.x*size, el.y*size )
-    //   else shape.lineTo( el.x*size, el.y*size )
-    // })
-    console.log(shape);
     
 
 
@@ -140,14 +137,15 @@ import { computed, onMounted, ref, watch } from 'vue';
     scene.add( smesh );
     meshArr.push(smesh)
 
-    console.log(smesh);
+
 
   // smesh.geometry.parameters.shapes.curves[0].v1.x = 5
 }
   const draw = ()=> {
     meshArr.forEach(e=>{
         e.geometry.dispose();
-        e.material.dispose();
+        // e.material.dispose();
+        // console.log(e.material);
         scene.remove(e);
     });
     meshArr=[];    
@@ -172,25 +170,13 @@ import { computed, onMounted, ref, watch } from 'vue';
   watch(aspectRaio, updateRenderer)
   watch(aspectRaio, updateCamera)
 
-  let b = 0
-
-  const smeshAnim = () =>{
-    // smesh.rotation.x = b
-    // console.log(b);
-    
-    // b+=0.01
-  }
-
 
 
   const loop = ()=>{    
 
-    smeshAnim()
-
-    fpsGraph.begin();
     renderer.render(scene, camera)
     constrols.update()
-    fpsGraph.end();
+
     requestAnimationFrame(loop)
   }
   
