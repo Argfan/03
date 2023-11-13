@@ -25,10 +25,9 @@ import { computed, onMounted, ref, watch } from 'vue';
   
 
 
-  // const PARAMS = {
-  //   speed: 50,
-
-  // };   
+  const PARAMS = {
+    extDepth: 0.1,
+  };   
 
   const cornerList = pane.addBlade({
     view: 'list',
@@ -47,9 +46,14 @@ import { computed, onMounted, ref, watch } from 'vue';
   cornerList.on('change', (ev:any)=>{
     clipC.setClipCorner(+ev.value)
   })
-  console.log(cornerList);
+
+  pane.addBinding(PARAMS, 'extDepth', {
+    min: 0.1,
+    max: 1,
+  }).on("change", ()=> draw() );
+
   
-  // cornerList.addEventListener('change', ()=>{})
+
   
   watch(clipPath, 
     ()=>{   
@@ -124,7 +128,7 @@ import { computed, onMounted, ref, watch } from 'vue';
     
 
 
-    const extrudeSettings = { depth: 0.1, bevelEnabled: true, bevelSegments: 1, steps: 1, bevelSize: 0, bevelThickness: 0 };
+    const extrudeSettings = { depth: PARAMS.extDepth, bevelEnabled: true, bevelSegments: 1, steps: 1, bevelSize: 0, bevelThickness: 0 };
     const geometry = new ExtrudeGeometry( shape, extrudeSettings );
     const material = new MeshStandardMaterial(  );
     const smesh = new Mesh( geometry, material ) ;
